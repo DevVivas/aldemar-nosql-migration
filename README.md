@@ -52,10 +52,6 @@ Mejoras: sincronizar la app Android con Atlas, aggregation de biomasa semanal, d
 
 ## 6. Anexos
 - Script completo: `aquamuestra.mongodb.js`
-- Presentación: `AquaMuestra_NoSQL.pptx` (se regenera con `npm install && node presentacion/build_ppt.js`)
+- Presentación: `AquaMuestra_NoSQL.pptx` (con las capturas pegadas a mano; no la regeneres con `build_ppt.js`, porque borraría las capturas y los ajustes)
+- Informe: `Informe_AquaMuestra_BDY1103.docx`
 - Guion de defensa: `GUION_DEFENSA.md`
-
-## Qué falta hacer (tú)
-1. Crear el cluster en MongoDB Atlas (tier gratuito M0) y conectarlo en VS Code.
-2. Ejecutar el script y pegar tus capturas en las 4 diapositivas de CRUD (cuadros punteados).
-Los datos son de demostración.

@@ -6,9 +6,11 @@
    CÓMO USAR (VS Code + extensión MongoDB):
    1. Conéctate a tu cluster Atlas.
    2. Ejecuta el bloque 0 (setup) una sola vez.
-   3. Para la demo: selecciona UN bloque, clic derecho ->
-      "Run Selected Lines From Playground". (El Playground solo muestra
-      el resultado de la última instrucción ejecutada.)
+   3. Para la demo: selecciona UN bloque DESDE su línea use('aquamuestra_db');
+      hasta el final de la instrucción, y ejecútalo con Ctrl+Shift+P ->
+      "MongoDB: Run Selected Lines From Playground". Sin el use() el
+      Playground corre en la base "test". (Solo muestra el resultado de
+      la última instrucción ejecutada.)
    Datos 100% de demostración.
    ===================================================================== */
 
@@ -46,6 +48,7 @@ db.muestras.createIndex({ 'centro.nombre': 1, estado: 1 });
    ===================================================================== */
 
 // 1.1 insertOne: el operario registra UNA muestra en terreno
+use('aquamuestra_db');
 db.muestras.insertOne({
   codigo_ficha: 'MUE-1001',
   estado: 'aprobada',
@@ -64,6 +67,7 @@ db.muestras.insertOne({
 });
 
 // 1.2 insertMany: carga inicial (9 fichas más, con estados y centros variados)
+use('aquamuestra_db');
 db.muestras.insertMany([
   { codigo_ficha: 'MUE-1002', estado: 'pendiente', conteo_total: 105, sincronizado: false,
     fecha_registro: new Date('2026-10-24T15:45:00-03:00'),
@@ -152,36 +156,45 @@ db.muestras.insertMany([
    ===================================================================== */
 
 // 2.1 Ficha completa por código (1 consulta, 0 JOIN)
+use('aquamuestra_db');
 db.muestras.find({ codigo_ficha: 'MUE-1001' });
 
 // 2.2 Rango $gte/$lte: muestras con conteo entre 50 y 100
+use('aquamuestra_db');
 db.muestras.find({ conteo_total: { $gte: 50, $lte: 100 } });
 
 // 2.3 Lista $in: muestras de centros de Calbuco o Quellón (subdocumento)
+use('aquamuestra_db');
 db.muestras.find({ 'centro.comuna': { $in: ['Calbuco', 'Quellón'] } });
 
 // 2.4 Arreglo $all: etiquetadas "urgente" Y "biomasa" a la vez
+use('aquamuestra_db');
 db.muestras.find({ etiquetas: { $all: ['urgente', 'biomasa'] } });
 
 // 2.5 $nin: todo lo que NO es rechazada ni aprobada (queda pendiente)
+use('aquamuestra_db');
 db.muestras.find({ estado: { $nin: ['rechazada', 'aprobada'] } });
 
 // 2.6 $or: pendientes sin sincronizar O con etiqueta urgente
+use('aquamuestra_db');
 db.muestras.find({ $or: [
   { estado: 'pendiente', sincronizado: false },
   { etiquetas: 'urgente' }
 ] });
 
 // 2.7 $elemMatch: alguna lectura con talla >= 55 mm Y peso >= 16 g
+use('aquamuestra_db');
 db.muestras.find({ lecturas: { $elemMatch: { talla_mm: { $gte: 55 }, peso_g: { $gte: 16 } } } });
 
 // 2.8 Proyección + sort + limit: las 3 más recientes (solo lo útil, sin _id)
+use('aquamuestra_db');
 db.muestras
   .find({}, { _id: 0, codigo_ficha: 1, estado: 1, 'centro.nombre': 1, fecha_registro: 1 })
   .sort({ fecha_registro: -1 })
   .limit(3);
 
 // 2.9 distinct: ¿qué centros tienen muestras?
+use('aquamuestra_db');
 db.muestras.distinct('centro.nombre');
 
 /* =====================================================================
@@ -189,6 +202,7 @@ db.muestras.distinct('centro.nombre');
    ===================================================================== */
 
 // 3.1 $set (+ subdocumento nuevo): el supervisor aprueba MUE-1002
+use('aquamuestra_db');
 db.muestras.updateOne(
   { codigo_ficha: 'MUE-1002' },
   { $set: {
@@ -198,6 +212,7 @@ db.muestras.updateOne(
 );
 
 // 3.2 $inc + $push: el operario agrega 30 ejemplares a MUE-1005 (suma al conteo)
+use('aquamuestra_db');
 db.muestras.updateOne(
   { codigo_ficha: 'MUE-1005' },
   { $inc: { conteo_total: 30 },
@@ -205,21 +220,25 @@ db.muestras.updateOne(
 );
 
 // 3.3 $inc negativo: corrección, se restan 5 ejemplares de la 1ª lectura de MUE-1001
+use('aquamuestra_db');
 db.muestras.updateOne(
   { codigo_ficha: 'MUE-1001' },
   { $inc: { 'lecturas.0.cantidad': -5, conteo_total: -5 } }
 );
 
 // 3.4 $addToSet: agrega etiqueta sin duplicarla
+use('aquamuestra_db');
 db.muestras.updateOne(
   { codigo_ficha: 'MUE-1010' },
   { $addToSet: { etiquetas: 'revisado' } }
 );
 
 // 3.5 updateMany + $unset: limpia el campo temporal "borrador" de todas las fichas
+use('aquamuestra_db');
 db.muestras.updateMany({ borrador: { $exists: true } }, { $unset: { borrador: '' } });
 
 // 3.6 updateMany + $set: sincroniza todo lo no sincronizado que no esté rechazado
+use('aquamuestra_db');
 db.muestras.updateMany(
   { sincronizado: false, estado: { $ne: 'rechazada' } },
   { $set: { sincronizado: true } }
@@ -230,10 +249,26 @@ db.muestras.updateMany(
    ===================================================================== */
 
 // 4.1 deleteOne: se borra la ficha puntual MUE-1009 (foto ilegible, se repitió)
+use('aquamuestra_db');
 db.muestras.deleteOne({ codigo_ficha: 'MUE-1009' });
 
+// 4.1b Prueba del filtro antes de borrar: debe aparecer solo lo que se va a eliminar
+use('aquamuestra_db');
+db.muestras.find({ estado: 'rechazada', sincronizado: false });
+
 // 4.2 deleteMany seguro: solo rechazadas Y sin sincronizar (nunca aprobadas)
+use('aquamuestra_db');
 db.muestras.deleteMany({ estado: 'rechazada', sincronizado: false });
 
 // Control final: debe quedar 8 documentos
+use('aquamuestra_db');
 db.muestras.countDocuments();
+
+/* =====================================================================
+   5. VALIDACIÓN (opcional, para el informe): este insert DEBE fallar
+      con "Document failed validation" porque el estado no es válido.
+   ===================================================================== */
+use('aquamuestra_db');
+db.muestras.insertOne({ codigo_ficha: 'MUE-9999', estado: 'otro', conteo_total: 1, sincronizado: false,
+  fecha_registro: new Date(), centro: { nombre: 'X', linea: 'L' }, operario: { nombre: 'Y', rol: 'OPERARIO' },
+  lecturas: [{ especie: 'chorito', talla_mm: 50, peso_g: 10, cantidad: 1 }] });

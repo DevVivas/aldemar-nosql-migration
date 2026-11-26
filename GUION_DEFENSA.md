@@ -1,6 +1,6 @@
 # Guion de defensa · AquaMuestra (16 diapositivas, ~15 min)
 
-Cada integrante debe poder explicar CUALQUIER consulta. Reparto sugerido para hablar; el resto lo repasa.
+Cada integrante debe poder explicar CUALQUIER consulta y cubrir todos los puntos de la rúbrica (problema, datos, SQL vs NoSQL, modelo, CRUD y conclusión): la evaluación es individual. Reparto sugerido para hablar; el resto lo repasa.
 
 | Quién | Diapositivas |
 |---|---|
@@ -43,3 +43,8 @@ Cada integrante debe poder explicar CUALQUIER consulta. Reparto sugerido para ha
 - *¿Y si cambia un centro?* Se actualiza con `updateMany` por `centro.nombre`; es el costo de embeber, aceptable porque los centros casi no cambian.
 - *¿Qué evita datos inválidos?* La validación `$jsonSchema` (estado solo pendiente/aprobada/rechazada).
 - *¿Por qué `$inc` y no `$set`?* Suma de forma atómica, sin leer antes el valor.
+- *¿Por qué documental y no clave-valor, columnar o grafos?* Clave-valor no consulta por rango o estado; columnar apunta a escrituras masivas; grafos sirven cuando lo central son las relaciones. Aquí la ficha se lee completa y tiene datos anidados.
+- *¿Desventajas de MongoDB?* Datos repetidos al embeber, sin llaves foráneas nativas y JOIN ($lookup) más limitados. Para facturación o integridad estricta, Oracle.
+- *¿Mongo no tiene transacciones?* Sí: ACID por documento y transacciones multi-documento desde la 4.0.
+- *¿Por qué corrieron antes en la base test?* El Playground usa test si el bloque se selecciona sin use('aquamuestra_db'). Se detectó en el panel, se borró test.muestras y se agregó use() a cada bloque.
+- *¿Qué pasa si ejecutas dos veces un update?* $inc suma otra vez; $unset y $set devuelven matchedCount 0 porque ya no hay nada que cambiar. Se reinicia con el bloque 0.
